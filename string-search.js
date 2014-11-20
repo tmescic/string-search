@@ -62,37 +62,40 @@ function boyer_moore_horspool (needle, haystack) {
  */
 function rabin_karp(needle, haystack) {
 
-	var PRIME = 101;
-	
+	var RollingHash = function RollingHash(s) {
+		this.length = s.length;
+		this.PRIME = 101;
 
-	function hash(s) {
-
-		var h = 0.0;
+		// calculate initial hash
+		this.hash = 0;
 		for (var i = 0; i < s.length; i++) {
-			var c = s[i].charCodeAt(0);
-			h += c * Math.pow(PRIME, s.length - i - 1);
+			var c = s[i].charCodeAt(0); // numeric code of a char
+			this.hash += c * Math.pow(this.PRIME, s.length - i - 1);
 		}
-
-		return h;
 	}
 
-	function nextHash(oldHash, oldChar, newChar, length) {
-
-		var next = oldHash - oldChar.charCodeAt(0) * Math.pow(PRIME, length-1);
-		next *= PRIME;
+	/*
+	 * Calculate next hash - old char out - new char in.
+	 */
+	RollingHash.prototype.next = function (oldChar, newChar) {
+		var next = this.hash - oldChar.charCodeAt(0) * Math.pow(this.PRIME, this.length-1);
+		next *= this.PRIME;
 		next += newChar.charCodeAt(0);
 
-		return next;
-
+		this.hash = next;
 	}
+	
+	var needleHash = new RollingHash(needle);
+	var rollHash = new RollingHash(haystack.substring(0, needle.length));
+	var i = 0;
 
-	var needleHash = hash(needle);
-	var rollingHash = hash(haystack.substring(0, needle.length))
+	while (true) {
 
-	for (var i = 0; i <= haystack.length - needle.length; i++) {
-
-		// same hashes ?
-		if (needleHash === rollingHash) {
+		// IMPORTANT - because numbers in javascript are always 64-bit floating 
+		// point (thank you Brendan Eich) - for large inputs with many characters, 
+		// hash value will be very big value and we will start to lose precision, 
+		// so this comparison might fail 
+		if (needleHash.hash === rollHash.hash) {
 
 			// check if the strings are the same
 			j = 0;
@@ -102,16 +105,20 @@ function rabin_karp(needle, haystack) {
 			if (j === needle.length) return i; // BINGO!!!
 		}
 
-		// get next hash
-		rollingHash = nextHash(rollingHash, haystack[i], haystack[i + needle.length], needle.length);
+		if (i === haystack.length - needle.length) {
+			return -1; // end, no matches
+		} else {
+			// recalcuate the hash because we are moving one char to the right
+			rollHash.next(haystack[i], haystack[i + needle.length]);
+			i++;
+		}
 	}
 
 	return -1;
-
 }
 
 
-var n = "D"
+var n = "AAC";
 var h = "AAAAAAAAAAACAABCCCCC";
 
 console.log("n : " + n + "\nh : " + h + "\n");
