@@ -9,6 +9,6 @@ Algorithms:
 1. Naive (brute-force)
 2. Boyer-Moore-Harspool (like classic B-M but simpler)
 3. Rabin–Karp (rolling hash)
-4. Boyer-Moore
-5. Knuth-Morris-Pratt
+4. Knuth-Morris-Pratt
+5. Boyer-Moore
 
